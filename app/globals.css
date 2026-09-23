@@ -1,26 +1,273 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@layer base {
+  :root,
+  [data-theme="barca"] {
+    --background: #040714;
+    --foreground: #f8fafc;
+    --card: #0c132c;
+    --card-foreground: #f8fafc;
+    --popover: #0c132c;
+    --popover-foreground: #f8fafc;
+    --primary: #a50044;
+    --primary-foreground: #ffffff;
+    --secondary: #004d98;
+    --secondary-foreground: #ffffff;
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8;
+    --accent: #edbb00;
+    --accent-foreground: #040714;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: rgba(165, 0, 68, 0.28);
+    --input: #1e293b;
+    --ring: #a50044;
+    --radius: 0.85rem;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+    /* Theme specific design tokens */
+    --nav-bg: rgba(4, 7, 20, 0.82);
+    --card-border-hover: rgba(237, 187, 0, 0.5);
+    --glow-primary: rgba(165, 0, 68, 0.4);
+    --glow-secondary: rgba(0, 77, 152, 0.45);
+    --glow-accent: rgba(237, 187, 0, 0.35);
+    --hero-gradient: radial-gradient(circle at 50% 20%, rgba(165, 0, 68, 0.28) 0%, rgba(0, 77, 152, 0.22) 40%, rgba(4, 7, 20, 0.95) 85%);
+    --card-shadow: 0 10px 35px -5px rgba(0, 77, 152, 0.25), 0 0 15px rgba(165, 0, 68, 0.15);
+    --badge-bg: rgba(165, 0, 68, 0.18);
+    --badge-border: rgba(165, 0, 68, 0.45);
+    --badge-text: #fecdd3;
+    --timeline-line: linear-gradient(to bottom, #a50044, #004d98, #edbb00);
+    --theme-font-heading: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --theme-card-radius: 1rem;
+    --theme-border-style: solid;
+    --theme-aesthetic: "barca";
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  [data-theme="minimal"] {
+    --background: #fdfdfd;
+    --foreground: #09090b;
+    --card: #ffffff;
+    --card-foreground: #09090b;
+    --popover: #ffffff;
+    --popover-foreground: #09090b;
+    --primary: #18181b;
+    --primary-foreground: #ffffff;
+    --secondary: #f4f4f5;
+    --secondary-foreground: #18181b;
+    --muted: #f4f4f5;
+    --muted-foreground: #71717a;
+    --accent: #27272a;
+    --accent-foreground: #ffffff;
+    --destructive: #dc2626;
+    --destructive-foreground: #ffffff;
+    --border: #e4e4e7;
+    --input: #e4e4e7;
+    --ring: #18181b;
+    --radius: 0.25rem;
+
+    /* Theme specific design tokens */
+    --nav-bg: rgba(253, 253, 253, 0.88);
+    --card-border-hover: #18181b;
+    --glow-primary: transparent;
+    --glow-secondary: transparent;
+    --glow-accent: transparent;
+    --hero-gradient: linear-gradient(180deg, #fbfbfb 0%, #ffffff 100%);
+    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    --badge-bg: #f4f4f5;
+    --badge-border: #e4e4e7;
+    --badge-text: #18181b;
+    --timeline-line: #d4d4d8;
+    --theme-font-heading: "Georgia", "Times New Roman", serif, -apple-system, BlinkMacSystemFont;
+    --theme-card-radius: 0.25rem;
+    --theme-border-style: solid;
+    --theme-aesthetic: "minimal";
   }
 }
 
+* {
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.3s ease;
+}
+
+/* Custom modern scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Focus and selection */
+::selection {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2.5s infinite;
+}
+
+/* Barca Theme specific utilities */
+[data-theme="barca"] .theme-heading {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+[data-theme="barca"] .theme-card {
+  background: radial-gradient(circle at top left, rgba(165, 0, 68, 0.12), transparent 40%),
+              radial-gradient(circle at bottom right, rgba(0, 77, 152, 0.15), transparent 45%),
+              rgba(12, 19, 44, 0.85);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(165, 0, 68, 0.3);
+  box-shadow: 0 12px 30px -10px rgba(4, 7, 20, 0.8), 0 0 20px -5px rgba(0, 77, 152, 0.2);
+  border-radius: 1.25rem;
+}
+
+[data-theme="barca"] .theme-card:hover {
+  border-color: rgba(237, 187, 0, 0.6);
+  box-shadow: 0 15px 40px -10px rgba(165, 0, 68, 0.35), 0 0 25px rgba(237, 187, 0, 0.2);
+}
+
+[data-theme="barca"] .theme-glow-text {
+  text-shadow: 0 0 25px rgba(237, 187, 0, 0.5), 0 0 45px rgba(165, 0, 68, 0.4);
+}
+
+[data-theme="barca"] .theme-badge {
+  background: linear-gradient(135deg, rgba(165, 0, 68, 0.25), rgba(0, 77, 152, 0.3));
+  border: 1px solid rgba(237, 187, 0, 0.4);
+  color: #ffde59;
+  border-radius: 9999px;
+  box-shadow: 0 0 12px rgba(165, 0, 68, 0.3);
+}
+
+[data-theme="barca"] .theme-btn-primary {
+  background: linear-gradient(135deg, #a50044 0%, #004d98 100%);
+  color: #ffffff;
+  border: 1px solid rgba(237, 187, 0, 0.4);
+  box-shadow: 0 8px 24px -4px rgba(165, 0, 68, 0.5), 0 0 16px rgba(0, 77, 152, 0.4);
+  border-radius: 9999px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+[data-theme="barca"] .theme-btn-primary:hover {
+  background: linear-gradient(135deg, #be0452 0%, #0a65c2 100%);
+  box-shadow: 0 10px 30px -2px rgba(237, 187, 0, 0.5), 0 0 24px rgba(165, 0, 68, 0.6);
+}
+
+/* Minimal Theme specific utilities */
+[data-theme="minimal"] .theme-heading {
+  font-family: var(--theme-font-heading);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+[data-theme="minimal"] .theme-card {
+  background: #ffffff;
+  border: 1px solid #e4e4e7;
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="minimal"] .theme-card:hover {
+  border-color: #18181b;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="minimal"] .theme-glow-text {
+  text-shadow: none;
+}
+
+[data-theme="minimal"] .theme-badge {
+  background: #f4f4f5;
+  border: 1px solid #e4e4e7;
+  color: #18181b;
+  border-radius: 0.15rem;
+  font-family: monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+[data-theme="minimal"] .theme-btn-primary {
+  background: #18181b;
+  color: #ffffff;
+  border: 1px solid #18181b;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+[data-theme="minimal"] .theme-btn-primary:hover {
+  background: #3f3f46;
+  border-color: #3f3f46;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
