@@ -26,18 +26,26 @@ pipeline {
         }
 
         stage('3. Update Manifest Repo') {
-            steps {
-                withCredentials([string(credentialsId: 'github-pat', variable: 'TOKEN')]) {
-                    sh """
-                        git clone https://${TOKEN}@github.com/SokryPES/pedri-manifests.git
-                        cd pedri-manifests/charts/khmer-frontend
-                        sed -i "s|tag: .*|tag: \\"${BUILD_NUMBER}\\"|g" values.yaml
-                        git commit -am "update image tag to ${BUILD_NUMBER}"
-                        git push origin main
-                    """
-                }
-            }
+    steps {
+        withCredentials([string(credentialsId: 'github-pat', variable: 'TOKEN')]) {
+            sh """
+                git config --global user.email "jenkins@ci.com"
+                git config --global user.name "Jenkins"
+
+               
+                git clone https://${TOKEN}@github.com/SokryPES/pedri-manifests.git temp_repo
+                cd temp_repo
+
+                
+                sed -i "s|tag: .*|tag: \\"${BUILD_NUMBER}\\"|g" values.yaml
+
+                
+                git add values.yaml
+                git commit -m "update image tag to ${BUILD_NUMBER}"
+                git push origin main
+            """
         }
+    }
 
     }
 }
