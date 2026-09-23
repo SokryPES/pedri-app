@@ -2,50 +2,57 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_USER = 'sokrypes'
-        APP_NAME    = 'pedri-app'
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials-id')
+        GITHUB_TOKEN          = credentials('github-pat')
+        IMAGE_NAME            = 'sokrypes/pedri-app'
+        MANIFEST_REPO         = 'SokryPES/pedri-manifests'
     }
 
     stages {
-
-        stage('1. Build Image') {
+        stage('1. Build Docker Image') {
             steps {
-                sh "docker build -t ${DOCKER_USER}/${APP_NAME}:${BUILD_NUMBER} ."
+                sh """
+                    docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} .
+                    docker tag ${IMAGE_NAME}:${BUILD_NUMBER} ${IMAGE_NAME}:latest
+                """
             }
         }
 
-        stage('2. Push to Docker Hub') {
+        stage('2. Push Image to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials-id', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                    sh """
-                        echo $PASS | docker login -u $USER --password-stdin
-                        docker push ${DOCKER_USER}/${APP_NAME}:${BUILD_NUMBER}
-                    """
-                }
+                sh """
+                    echo \$DOCKERHUB_CREDENTIALS_PSW | docker login -u \$DOCKERHUB_CREDENTIALS_USR --password-stdin
+                    docker push ${IMAGE_NAME}:${BUILD_NUMBER}
+                    docker push ${IMAGE_NAME}:latest
+                """
             }
         }
 
         stage('3. Update Manifest Repo') {
-    steps {
-        withCredentials([string(credentialsId: 'github-pat', variable: 'TOKEN')]) {
-            sh """
-                git config --global user.email "jenkins@ci.com"
-                git config --global user.name "Jenkins"
+            steps {
+                sh """
+                    git config --global user.email "jenkins@ci.com"
+                    git config --global user.name "Jenkins"
 
-               
-                git clone https://${TOKEN}@github.com/SokryPES/pedri-manifests.git temp_repo
-                cd temp_repo
+                    rm -rf temp_repo
+                    git clone https://${GITHUB_TOKEN}@github.com/${MANIFEST_REPO}.git temp_repo
+                    cd temp_repo
 
-                
-                sed -i "s|tag: .*|tag: \\"${BUILD_NUMBER}\\"|g" values.yaml
+                    # កែប្រែ Tag រូបភាពក្នុង values.yaml នៅ Root Folder
+                    sed -i "s|tag: .*|tag: \\"${BUILD_NUMBER}\\"|g" values.yaml
 
-                
-                git add values.yaml
-                git commit -m "update image tag to ${BUILD_NUMBER}"
-                git push origin main
-            """
+                    git add values.yaml
+                    git commit -m "chore: update image tag to ${BUILD_NUMBER}" || echo "No changes to commit"
+                    git push origin main
+                """
+            }
         }
     }
 
+    post {
+        always {
+            sh 'docker logout || true'
+            cleanWs()
+        }
     }
 }
