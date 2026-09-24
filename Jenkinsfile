@@ -37,8 +37,7 @@ pipeline {
 
     post {
         always {
-           
-            node {
+            script {
                 sh 'docker logout || true'
                 sh 'docker image prune -f || true'
             }
