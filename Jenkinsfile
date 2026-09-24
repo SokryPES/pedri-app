@@ -2,57 +2,46 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials-id')
-        GITHUB_TOKEN          = credentials('github-pat')
-        IMAGE_NAME            = 'sokrypes/pedri-app'
-        MANIFEST_REPO         = 'SokryPES/pedri-manifests'
+        DOCKER_IMAGE = 'sokrypes/pedri-app'
+        DOCKER_CREDENTIALS_ID = 'dockerhub-credentials-id'
     }
 
     stages {
-        stage('1. Build Docker Image') {
+        stage('Checkout') {
             steps {
-                sh """
-                    docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} .
-                    docker tag ${IMAGE_NAME}:${BUILD_NUMBER} ${IMAGE_NAME}:latest
-                """
+                checkout scm
             }
         }
 
-        stage('2. Push Image to Docker Hub') {
+        stage('Build Docker Image') {
             steps {
-                sh """
-                    echo \$DOCKERHUB_CREDENTIALS_PSW | docker login -u \$DOCKERHUB_CREDENTIALS_USR --password-stdin
-                    docker push ${IMAGE_NAME}:${BUILD_NUMBER}
-                    docker push ${IMAGE_NAME}:latest
-                """
+                script {
+                    sh 'docker build -t $DOCKER_IMAGE:${BUILD_NUMBER} .'
+                    sh 'docker tag $DOCKER_IMAGE:${BUILD_NUMBER} $DOCKER_IMAGE:latest'
+                }
             }
         }
 
-        stage('3. Update Manifest Repo') {
+        stage('Push Image to Docker Hub') {
             steps {
-                sh """
-                    git config --global user.email "jenkins@ci.com"
-                    git config --global user.name "Jenkins"
-
-                    rm -rf temp_repo
-                    git clone https://${GITHUB_TOKEN}@github.com/${MANIFEST_REPO}.git temp_repo
-                    cd temp_repo
-
-                    # កែប្រែ Tag រូបភាពក្នុង values.yaml នៅ Root Folder
-                    sed -i "s|tag: .*|tag: \\"${BUILD_NUMBER}\\"|g" values.yaml
-
-                    git add values.yaml
-                    git commit -m "chore: update image tag to ${BUILD_NUMBER}" || echo "No changes to commit"
-                    git push origin main
-                """
+                script {
+                    withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USER')]) {
+                        sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin'
+                        sh 'docker push $DOCKER_IMAGE:${BUILD_NUMBER}'
+                        sh 'docker push $DOCKER_IMAGE:latest'
+                    }
+                }
             }
         }
     }
 
     post {
         always {
-            sh 'docker logout || true'
-            cleanWs()
+           
+            node {
+                sh 'docker logout || true'
+                sh 'docker image prune -f || true'
+            }
         }
     }
 }
